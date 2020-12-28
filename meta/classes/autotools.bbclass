@@ -224,9 +224,11 @@ autotools_do_configure() {
 			intltoolize --copy --force --automake
 		fi
 
-		for i in $PRUNE_M4; do
-			find ${S} -ignore_readdir_race -name $i -delete
-		done
+		if [ "${INHIBIT_PRUNE_M4}" = "" ]; then
+			for i in $PRUNE_M4; do
+				find ${S} -ignore_readdir_race -name $i -delete
+			done
+		fi
 
 		bbnote Executing ACLOCAL=\"$ACLOCAL\" autoreconf -Wcross --verbose --install --force ${EXTRA_AUTORECONF} $acpaths
 		ACLOCAL="$ACLOCAL" autoreconf -Wcross --verbose --install --force ${EXTRA_AUTORECONF} $acpaths || die "autoreconf execution failed."
