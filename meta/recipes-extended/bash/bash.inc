@@ -8,6 +8,7 @@ inherit autotools gettext texinfo update-alternatives ptest
 
 EXTRA_AUTORECONF += "--exclude=autoheader --exclude=aclocal"
 EXTRA_OECONF = "--enable-job-control --without-bash-malloc bash_cv_wexitstatus_offset=8"
+INHIBIT_PRUNE_M4 = "1"
 
 # If NON_INTERACTIVE_LOGIN_SHELLS is defined, all login shells read the
 # startup files, even if they are not interactive.
