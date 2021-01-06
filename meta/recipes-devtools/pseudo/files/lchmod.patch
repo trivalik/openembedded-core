@@ -1,0 +1,57 @@
+Index: git/ports/linux/guts/lchmod.c
+===================================================================
+--- /dev/null
++++ git/ports/linux/guts/lchmod.c
+@@ -0,0 +1,14 @@
++/* 
++ * Copyright (c) 2021 Linux Foundation
++ *
++ * SPDX-License-Identifier: LGPL-2.1-only
++ *
++ * static int
++ * wrap_lchmod(const char *path, mode_t mode) {
++ */
++
++	rc = wrap_fchmodat(AT_FDCWD, path, mode, AT_SYMLINK_NOFOLLOW);
++
++/*	return rc;
++ * }
++ */
+Index: git/ports/linux/wrapfuncs.in
+===================================================================
+--- git.orig/ports/linux/wrapfuncs.in
++++ git/ports/linux/wrapfuncs.in
+@@ -3,6 +3,7 @@ char *get_current_dir_name(void);
+ int __xstat(int ver, const char *path, struct stat *buf);
+ int __lxstat(int ver, const char *path, struct stat *buf); /* flags=AT_SYMLINK_NOFOLLOW */
+ int __fxstat(int ver, int fd, struct stat *buf);
++int lchmod(const char *path, mode_t mode); /* flags=AT_SYMLINK_NOFOLLOW */
+ int lchown(const char *path, uid_t owner, gid_t group); /* flags=AT_SYMLINK_NOFOLLOW */
+ int __fxstatat(int ver, int dirfd, const char *path, struct stat *buf, int flags);
+ int openat(int dirfd, const char *path, int flags, ...{mode_t mode}); /* flags=flags&O_NOFOLLOW, noignore_path=1 */
+Index: git/ports/unix/guts/fchmodat.c
+===================================================================
+--- git.orig/ports/unix/guts/fchmodat.c
++++ git/ports/unix/guts/fchmodat.c
+@@ -11,16 +11,16 @@
+ 	PSEUDO_STATBUF buf;
+ 	int save_errno = errno;
+ 
+-	if (flags & AT_SYMLINK_NOFOLLOW) {
+-		errno = ENOTSUP;
+-		return -1;
+-	}
+ #ifdef PSEUDO_NO_REAL_AT_FUNCTIONS
+ 	if (dirfd != AT_FDCWD) {
+ 		errno = ENOSYS;
+ 		return -1;
+ 	}
+-	rc = base_stat(path, &buf);
++	if (flags & AT_SYMLINK_NOFOLLOW) {
++	    rc = base_lstat(path, &buf);
++	} else {
++	    rc = base_stat(path, &buf);
++	}
+ #else
+ 	rc = base_fstatat(dirfd, path, &buf, flags);
+ #endif
